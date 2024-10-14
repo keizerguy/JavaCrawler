@@ -40,8 +40,8 @@ public class Main {
     private static CrawlController getCrawlController() throws Exception {
         CrawlConfig config = new CrawlConfig();
         config.setCrawlStorageFolder("/data/crawl/root");
-        config.setMaxDepthOfCrawling(2);
-        config.setMaxPagesToFetch(3);
+        config.setMaxDepthOfCrawling(3);
+        config.setMaxPagesToFetch(50);
 
         PageFetcher pageFetcher = new PageFetcher(config);
         RobotstxtConfig robotstxtConfig = new RobotstxtConfig();

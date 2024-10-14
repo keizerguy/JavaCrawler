@@ -15,7 +15,9 @@ public class ElasticSearchClient implements AutoCloseable {
 
     public ElasticSearchClient() {
         try {
-            RestClientBuilder builder = RestClient.builder(new HttpHost("localhost", 9200, "http"));
+            String elasticsearchHost = System.getenv("DOCKER_ENV") != null ? "elasticsearch" : "localhost";
+            RestClientBuilder builder = RestClient.builder(new HttpHost(elasticsearchHost, 9200, "http"));
+
             client = new RestHighLevelClient(builder);
         } catch (Exception e) {
             throw new RuntimeException(e);

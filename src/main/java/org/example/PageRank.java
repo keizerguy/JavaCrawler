@@ -35,7 +35,8 @@ public class PageRank {
             "ons", "onze", "onszelf", "samen", "toch", "u", "uw", "veel", "volgens", "want",
             "weinig", "wil", "wilt", "b", "c", "d", "e", "f", "g", "h", "function", "window",
             "j", "k", "l", "m", "n", "o", "p", "q", "r", "v", "w", "x", "y", "z", "const",
-            "foreach", "document", "var", "addeventlistener", "mw", "pages", "page", "edit"
+            "foreach", "document", "var", "addeventlistener", "mw", "pages", "page", "edit",
+            "www", "com", "org"
     );
 
     // Window size for co-occurrence
