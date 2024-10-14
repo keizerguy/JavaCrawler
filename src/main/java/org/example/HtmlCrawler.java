@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
@@ -57,26 +59,30 @@ public class HtmlCrawler extends WebCrawler {
 
             // Extract the top N keywords
             List<Map.Entry<String, Double>> keywords = extractKeywords(extractedText, 10);
-
-            // Display the results
-            for (Map.Entry<String, Double> entry : keywords) {
-                System.out.println(entry.getKey() + ": " + entry.getValue());
+            String[] keywordArray = new String[keywords.size()];
+            for (int i = 0; i < keywords.size(); i++) {
+                keywordArray[i] = keywords.get(i).getKey();
             }
 
-            BufferedWriter writer;
-            try {
-                writer = new BufferedWriter(new FileWriter("results.txt", true));
-                writer.append('\n');
-                writer.append("Page URL: ").append(url).append(", ").append("Text title: ").append(title).append(", ").append("Outgoing links: ").append(String.valueOf(links.size()));
-                writer.append('\n');
-                writer.append("Keywords:");
-                for (Map.Entry<String, Double> entry : keywords) {
-                    writer.append(entry.getKey()).append(" ");
-                }
-                writer.append('\n');
-                writer.append("Extracted text:").append(extractedText);
-                writer.close();
-            } catch (IOException e) {
+            JsonObject.MyJsonObject myJsonObject = new JsonObject.MyJsonObject(
+                    url,
+                    title,
+                    keywordArray
+            );
+
+            // Create a Gson object
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+            // Convert the object to JSON
+            String json = gson.toJson(myJsonObject);
+
+             // Add results to database
+            try (ElasticSearchClient esClient = new ElasticSearchClient()) {
+
+                ElasticSearchIndexer indexer = new ElasticSearchIndexer(esClient);
+                indexer.createIndexIfNotExist();
+                indexer.indexWords(json);
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
