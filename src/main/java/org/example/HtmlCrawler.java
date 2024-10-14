@@ -3,6 +3,8 @@ package org.example;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -10,6 +12,9 @@ import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
+import org.jsoup.Jsoup;
+
+import static org.example.PageRank.extractKeywords;
 
 public class HtmlCrawler extends WebCrawler {
 
@@ -38,23 +43,38 @@ public class HtmlCrawler extends WebCrawler {
 
         if (page.getParseData() instanceof HtmlParseData htmlParseData) {
             String title = htmlParseData.getTitle();
-            String text = htmlParseData.getText();
             String html = htmlParseData.getHtml();
             Set<WebURL> links = htmlParseData.getOutgoingUrls();
 
             System.out.println("---------------------------------------------------------");
             System.out.println("Page URL: " + url);
             System.out.println("Text title: " + title);
-            System.out.println("Text length: " + text.length());
-            System.out.println("Html length: " + html.length());
             System.out.println("Number of outgoing links: " + links.size());
             System.out.println("---------------------------------------------------------");
+
+            // Extract text from the html
+            String extractedText = Jsoup.parse(html).text();
+
+            // Extract the top N keywords
+            List<Map.Entry<String, Double>> keywords = extractKeywords(extractedText, 10);
+
+            // Display the results
+            for (Map.Entry<String, Double> entry : keywords) {
+                System.out.println(entry.getKey() + ": " + entry.getValue());
+            }
 
             BufferedWriter writer;
             try {
                 writer = new BufferedWriter(new FileWriter("results.txt", true));
                 writer.append('\n');
-                writer.append("Page URL: ").append(url).append(", ").append("Text title: ").append(title).append(", ").append("Text length: ").append(String.valueOf(text.length())).append(", ").append("Outgoing links: ").append(String.valueOf(links.size()));
+                writer.append("Page URL: ").append(url).append(", ").append("Text title: ").append(title).append(", ").append("Outgoing links: ").append(String.valueOf(links.size()));
+                writer.append('\n');
+                writer.append("Keywords:");
+                for (Map.Entry<String, Double> entry : keywords) {
+                    writer.append(entry.getKey()).append(" ");
+                }
+                writer.append('\n');
+                writer.append("Extracted text:").append(extractedText);
                 writer.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
