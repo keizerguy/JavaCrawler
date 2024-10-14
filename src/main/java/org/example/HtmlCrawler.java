@@ -55,7 +55,7 @@ public class HtmlCrawler extends WebCrawler {
             String extractedText = Jsoup.parse(html).text();
 
             // Extract the top N keywords
-            List<Map.Entry<String, Double>> keywords = extractKeywords(extractedText, 10);
+            List<Map.Entry<String, Double>> keywords = extractKeywords(extractedText, 7);
             String[] keywordArray = new String[keywords.size()];
             for (int i = 0; i < keywords.size(); i++) {
                 keywordArray[i] = keywords.get(i).getKey();

@@ -36,7 +36,7 @@ public class PageRank {
             "weinig", "wil", "wilt", "b", "c", "d", "e", "f", "g", "h", "function", "window",
             "j", "k", "l", "m", "n", "o", "p", "q", "r", "v", "w", "x", "y", "z", "const",
             "foreach", "document", "var", "addeventlistener", "mw", "pages", "page", "edit",
-            "www", "com", "org"
+            "www", "com", "org", "wikipedia"
     );
 
     // Window size for co-occurrence
