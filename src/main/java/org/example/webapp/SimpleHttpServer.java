@@ -8,7 +8,14 @@ import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.example.HtmlCrawler;
+import org.example.elasticsearch.ElasticSearchClient;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -69,7 +76,7 @@ public class SimpleHttpServer {
                     }
 
                     // Generate a response
-                    String htmlResponse = HtmlResponseGenerator.generateCrawlResultsPage(url, stringToInt(param1, 24), stringToInt(param2, 1), stringToInt(param3, 100));
+                    String htmlResponse = HtmlResponseGenerator.generateCrawlProgressPage(url, stringToInt(param1, 24), stringToInt(param2, 1), stringToInt(param3, 100));
 
                     // Send the HTML response back to the client
                     exchange.sendResponseHeaders(200, htmlResponse.length());
@@ -88,6 +95,45 @@ public class SimpleHttpServer {
                     }).start();
                 } else {
                     exchange.sendResponseHeaders(405, -1); // Method Not Allowed
+                }
+            }
+        });
+
+        server.createContext("/display-results", new HttpHandler() {
+            @Override
+            public void handle(HttpExchange exchange) throws IOException {
+                if ("POST".equals(exchange.getRequestMethod())) {
+                    try (ElasticSearchClient esClient = new ElasticSearchClient()) {
+                        if (esClient.indexExists("words")) {
+                            // Create the SearchRequest for the index
+                            SearchRequest searchRequest = new SearchRequest("words");
+
+                            // Build the search query (match all documents)
+                            SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+                            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+
+                            // Add the search source to the search request
+                            searchRequest.source(searchSourceBuilder);
+
+                            // Execute the search operation
+                            SearchResponse searchResponse = esClient.getClient().search(searchRequest, RequestOptions.DEFAULT);
+
+                            // Generate the HTML response with a table
+                            String responseHtml = HtmlResponseGenerator.generateCrawlResultsPage(searchResponse);
+
+                            // Send the HTML response back to the client
+                            exchange.getResponseHeaders().set("Content-Type", "text/html");
+                            exchange.sendResponseHeaders(200, responseHtml.length());
+                            OutputStream os = exchange.getResponseBody();
+                            os.write(responseHtml.getBytes());
+                            os.close();
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    // If the request is not a POST, return a 405 Method Not Allowed response
+                    exchange.sendResponseHeaders(405, -1);
                 }
             }
         });
