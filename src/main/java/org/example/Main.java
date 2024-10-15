@@ -7,17 +7,15 @@ import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.RequestOptions;
+import org.example.elasticsearch.ElasticSearchClient;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import org.example.webapp.SimpleHttpServer;
+
+import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        // Create results file
-        BufferedWriter writer = new BufferedWriter(new FileWriter("results.txt"));
-        writer.write("Gecrawlde websites:");
-        writer.close();
-
+        // Empty the database beforehand
         try (ElasticSearchClient esClient = new ElasticSearchClient()) {
             if (esClient.indexExists("words")){
                 // Create the DeleteIndexRequest
@@ -30,23 +28,12 @@ public class Main {
             }
         }
 
-        // Start crawling
-        CrawlController controller = getCrawlController();
-        controller.addSeed("https://en.wikipedia.org/wiki/Open-source_intelligence");
-        controller.start(HtmlCrawler.class, 24); // Number of crawlers
-    }
-
-    private static CrawlController getCrawlController() throws Exception {
-        CrawlConfig config = new CrawlConfig();
-        config.setCrawlStorageFolder("/data/crawl/root");
-        config.setPolitenessDelay(100);
-        config.setMaxDepthOfCrawling(1);
-        config.setMaxPagesToFetch(2000);
-        config.setThreadShutdownDelaySeconds(3);
-
-        PageFetcher pageFetcher = new PageFetcher(config);
-        RobotstxtConfig robotstxtConfig = new RobotstxtConfig();
-        RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
-        return new CrawlController(config, pageFetcher, robotstxtServer);
+        // Run crawling server
+        try {
+            SimpleHttpServer server = new SimpleHttpServer(8080);
+            server.start();
+        } catch (IOException e) {
+            System.err.println("Failed to start server: " + e.getMessage());
+        }
     }
 }

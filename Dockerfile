@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y maven
 
 # Copy project files
 COPY pom.xml /app/
+COPY index.html /app/
 COPY src /app/src
 
 # Run Maven to build the project

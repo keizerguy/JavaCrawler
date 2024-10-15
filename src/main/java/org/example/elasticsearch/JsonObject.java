@@ -1,4 +1,4 @@
-package org.example;
+package org.example.elasticsearch;
 
 public class JsonObject {
     public static class MyJsonObject {

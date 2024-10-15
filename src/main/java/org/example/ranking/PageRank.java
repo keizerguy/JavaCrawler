@@ -1,7 +1,6 @@
-package org.example;
+package org.example.ranking;
 
 import java.util.*;
-import java.util.regex.*;
 
 public class PageRank {
 

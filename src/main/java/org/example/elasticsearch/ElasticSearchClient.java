@@ -1,4 +1,4 @@
-package org.example;
+package org.example.elasticsearch;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.indices.GetIndexRequest;

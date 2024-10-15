@@ -11,9 +11,12 @@ import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
+import org.example.elasticsearch.ElasticSearchClient;
+import org.example.elasticsearch.ElasticSearchIndexer;
+import org.example.elasticsearch.JsonObject;
 import org.jsoup.Jsoup;
 
-import static org.example.PageRank.extractKeywords;
+import static org.example.ranking.PageRank.extractKeywords;
 
 public class HtmlCrawler extends WebCrawler {
 
