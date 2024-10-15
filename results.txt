@@ -1,1 +1,6 @@
 Gecrawlde websites:
+
+
+
+
+http://localhost:5601/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-15m,to:now))&_a=(columns:!(),filters:!(),index:'09183990-8a3f-11ef-8703-c16bcb4c0eab',interval:auto,query:(language:kuery,query:''),sort:!())

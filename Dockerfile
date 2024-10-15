@@ -19,5 +19,12 @@ FROM openjdk:23-slim-bullseye
 # Copy the JAR from the builder stage
 COPY --from=builder /app/target/JavaCrawler-1.0-SNAPSHOT.jar /app/main.jar
 
+COPY --from=builder /app/index.html /index.html
+
+# Expose ports
+EXPOSE 8080
+
 # Run the application
-ENTRYPOINT ["java", "--add-opens", "java.management/sun.management=ALL-UNNAMED", "-jar", "/app/main.jar"]
+#ENTRYPOINT ["java", "--add-opens", "java.management/sun.management=ALL-UNNAMED", "-jar", "/app/main.jar"]
+# Run the application with a delay
+ENTRYPOINT ["sh", "-c", "sleep 40 && java --add-opens java.management/sun.management=ALL-UNNAMED -jar /app/main.jar"]

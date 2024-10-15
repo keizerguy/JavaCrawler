@@ -69,21 +69,23 @@ public class SimpleHttpServer {
                     }
 
                     // Generate a response
-                    String response = String.format("Crawling URL: %s\nParameters: %s, %s, %s",
-                            url, param1, param2, param3);
+                    String htmlResponse = HtmlResponseGenerator.generateCrawlResultsPage(url, stringToInt(param1, 24), stringToInt(param2, 1), stringToInt(param3, 100));
 
-                    // Send the response back to the client
-                    exchange.sendResponseHeaders(200, response.length());
+                    // Send the HTML response back to the client
+                    exchange.sendResponseHeaders(200, htmlResponse.length());
                     OutputStream os = exchange.getResponseBody();
-                    os.write(response.getBytes());
+                    os.write(htmlResponse.getBytes());
                     os.close();
 
-                    // Start crawling with user specified input
-                    try {
-                        crawlWithParameters(url, stringToInt(param1, 24), stringToInt(param2, 1), stringToInt(param3, 100));
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
+                    // Create a new thread for the crawling process to avoid blocking the main server thread
+                    new Thread(() -> {
+                        // Start crawling with user specified input
+                        try {
+                            crawlWithParameters(url, stringToInt(param1, 24), stringToInt(param2, 1), stringToInt(param3, 100));
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }).start();
                 } else {
                     exchange.sendResponseHeaders(405, -1); // Method Not Allowed
                 }
@@ -95,6 +97,7 @@ public class SimpleHttpServer {
         server.setExecutor(null);
         server.start();
         System.out.println("Server started on port " + server.getAddress().getPort());
+        System.out.println("On address " + server.getAddress());
     }
 
     private Map<String, String> parseParameters(String requestBody) {
