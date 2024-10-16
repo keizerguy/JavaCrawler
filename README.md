@@ -12,7 +12,7 @@ A Java based web crawler built on Crawler4j and ElasticSearch, running on Docker
 
 2. Go to <localhost:8080>
 
-3. Wait until the elasticsearch container is fully operational before pressing the 'Crawl' button. Otherwise the java app will crash due to a denied connection. 
+3. Wait until the elasticsearch container is fully operational before pressing the 'Crawl' button. Otherwise the java app will throw an exception due to a nonexistent connection. 
 
 4. Specify a URL to crawl (and optionally other parameters), and start crawling. 
 
