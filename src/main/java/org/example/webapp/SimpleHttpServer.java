@@ -8,14 +8,14 @@ import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
+import org.example.elasticsearch.ElasticSearchClient;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.example.HtmlCrawler;
-import org.example.elasticsearch.ElasticSearchClient;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,6 +25,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -86,6 +87,21 @@ public class SimpleHttpServer {
 
                     // Create a new thread for the crawling process to avoid blocking the main server thread
                     new Thread(() -> {
+                        // Empty the database beforehand
+                        try (ElasticSearchClient esClient = new ElasticSearchClient()) {
+                            if (esClient.indexExists("words")){
+                                // Create the DeleteIndexRequest
+                                DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest("words");
+
+                                // Execute the delete operation
+                                esClient.getClient().indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
+
+                                System.out.println("Index 'words' deleted");
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+
                         // Start crawling with user specified input
                         try {
                             crawlWithParameters(url, stringToInt(param1, 24), stringToInt(param2, 1), stringToInt(param3, 100));
@@ -103,6 +119,7 @@ public class SimpleHttpServer {
             @Override
             public void handle(HttpExchange exchange) throws IOException {
                 if ("POST".equals(exchange.getRequestMethod())) {
+                    System.out.println("Received request: " + exchange.getRequestMethod());
                     try (ElasticSearchClient esClient = new ElasticSearchClient()) {
                         if (esClient.indexExists("words")) {
                             // Create the SearchRequest for the index
@@ -111,6 +128,7 @@ public class SimpleHttpServer {
                             // Build the search query (match all documents)
                             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
                             searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+                            searchSourceBuilder.size(10000);
 
                             // Add the search source to the search request
                             searchRequest.source(searchSourceBuilder);
@@ -120,16 +138,24 @@ public class SimpleHttpServer {
 
                             // Generate the HTML response with a table
                             String responseHtml = HtmlResponseGenerator.generateCrawlResultsPage(searchResponse);
+                            byte[] responseBytes = responseHtml.getBytes(StandardCharsets.UTF_8);
 
                             // Send the HTML response back to the client
                             exchange.getResponseHeaders().set("Content-Type", "text/html");
-                            exchange.sendResponseHeaders(200, responseHtml.length());
+                            exchange.sendResponseHeaders(200, responseBytes.length); // Correctly specify length
                             OutputStream os = exchange.getResponseBody();
                             os.write(responseHtml.getBytes());
+                            os.flush();
                             os.close();
                         }
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
+                        String errorHtml = "<html><body><h1>An error occurred: " + e.getMessage() + "</h1></body></html>";
+                        exchange.getResponseHeaders().set("Content-Type", "text/html");
+                        exchange.sendResponseHeaders(500, errorHtml.length());
+                        OutputStream os = exchange.getResponseBody();
+                        os.write(errorHtml.getBytes());
+                        os.close();
                     }
                 } else {
                     // If the request is not a POST, return a 405 Method Not Allowed response
@@ -143,7 +169,6 @@ public class SimpleHttpServer {
         server.setExecutor(null);
         server.start();
         System.out.println("Server started on port " + server.getAddress().getPort());
-        System.out.println("On address " + server.getAddress());
     }
 
     private Map<String, String> parseParameters(String requestBody) {

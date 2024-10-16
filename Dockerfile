@@ -25,6 +25,4 @@ COPY --from=builder /app/index.html /index.html
 EXPOSE 8080
 
 # Run the application
-#ENTRYPOINT ["java", "--add-opens", "java.management/sun.management=ALL-UNNAMED", "-jar", "/app/main.jar"]
-# Run the application with a delay
-ENTRYPOINT ["sh", "-c", "sleep 40 && java --add-opens java.management/sun.management=ALL-UNNAMED -jar /app/main.jar"]
+ENTRYPOINT ["java", "--add-opens", "java.management/sun.management=ALL-UNNAMED", "-jar", "/app/main.jar"]

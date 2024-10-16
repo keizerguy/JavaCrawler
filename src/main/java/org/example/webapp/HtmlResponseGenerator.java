@@ -98,7 +98,20 @@ public class HtmlResponseGenerator {
                 + "        button:hover {"
                 + "            background-color: #0056b3;"
                 + "        }"
+                + "        button:disabled {"
+                + "            background-color: #ccc;"
+                + "            cursor: not-allowed;"
+                + "        }"
                 + "    </style>"
+                + "    <script>"
+                + "        window.onload = function() {"
+                + "            var button = document.getElementById('display-button');"
+                + "            button.disabled = true;"  // Disable the button on load"
+                + "            setTimeout(function() {"
+                + "                button.disabled = false;"  // Enable the button after 10 seconds"
+                + "            }, 10000);"
+                + "        };"
+                + "    </script>"
                 + "</head>"
                 + "<body>"
                 + "    <div class=\"top-bar\"></div>"
@@ -110,7 +123,7 @@ public class HtmlResponseGenerator {
                 + "        <p>Crawl request in progress:</p>"
                 + "        <pre>" + jsonResponse + "</pre>"
                 + "        <form action=\"/display-results\" method=\"POST\">"
-                + "            <button type=\"submit\">Display Results</button>"
+                + "            <button type=\"submit\" id=\"display-button\">Display Results</button>"
                 + "        </form>"
                 + "    </div>"
                 + "</body>"
@@ -150,8 +163,16 @@ public class HtmlResponseGenerator {
                 .append("        }")
                 .append("        .nav {")
                 .append("            position: absolute;")
-                .append("            top: 10px;")
-                .append("            left: 10px;")
+                .append("            top: 15px;")
+                .append("            left: 15px;")
+                .append("            z-index: 20;")
+                .append("        }")
+                .append("        .nav a {")
+                .append("            color: white;")
+                .append("            text-decoration: none;")
+                .append("            padding: 10px;")
+                .append("            background-color: #007bff;")
+                .append("            border-radius: 5px;")
                 .append("        }")
                 .append("        h1 {")
                 .append("            color: #333;")
@@ -163,14 +184,18 @@ public class HtmlResponseGenerator {
                 .append("            border-radius: 8px;")
                 .append("            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);")
                 .append("            max-width: 90%;")
-                .append("            width: 500px;")
+                .append("            width: 1000px;")
                 .append("            text-align: center;")
-                .append("            margin-top: 60px;")
+                .append("            margin-top: 40px;")
+                .append("        }")
+                .append("        .table-wrapper {")
+                .append("            max-height: 600px;")
+                .append("            overflow-y: auto;")
+                .append("            margin-top: 20px;")
                 .append("        }")
                 .append("        table {")
                 .append("            width: 100%;")
                 .append("            border-collapse: collapse;")
-                .append("            margin-top: 20px;")
                 .append("        }")
                 .append("        th, td {")
                 .append("            border: 1px solid #ddd;")
@@ -185,28 +210,38 @@ public class HtmlResponseGenerator {
                 .append("</head>")
                 .append("<body>")
                 .append("    <div class=\"top-bar\"></div>")
-                .append("    <nav>")
+                .append("    <nav class=\"nav\">")
                 .append("        <a href=\"/\">Home</a>")
                 .append("    </nav>")
                 .append("    <div class=\"container\">")
                 .append("        <h1>Crawl Results</h1>")
-                .append("        <table>")
-                .append("            <tr>")
-                .append("                <th>URL</th>")
-                .append("                <th>Title</th>")
-                .append("                <th>Keywords</th>")
-                .append("            </tr>");
+                .append("        <div class=\"table-wrapper\">")
+                .append("            <table>")
+                .append("                <tr>")
+                .append("                    <th>URL</th>")
+                .append("                    <th>Title</th>")
+                .append("                    <th>Keywords</th>")
+                .append("                </tr>");
+
+        for (SearchHit hit : searchResponse.getHits()) {
+            System.out.println("Hit ID: " + hit.getId());
+        }
 
         // Populate the table rows from the SearchHit array
         for (SearchHit hit : searchResponse.getHits()) {
-            htmlResponse.append("            <tr>")
-                    .append("                <td>").append(hit.getSourceAsMap().get("url")).append("</td>")
-                    .append("                <td>").append(hit.getSourceAsMap().get("title")).append("</td>")
-                    .append("                <td>").append(hit.getSourceAsMap().get("keywords")).append("</td>")
-                    .append("            </tr>");
+            String url = hit.getSourceAsMap().get("url") != null ? hit.getSourceAsMap().get("url").toString() : "N/A";
+            String title = hit.getSourceAsMap().get("title") != null ? hit.getSourceAsMap().get("title").toString() : "N/A";
+            String keywords = hit.getSourceAsMap().get("keywords") != null ? hit.getSourceAsMap().get("keywords").toString() : "N/A";
+
+            htmlResponse.append("                <tr>")
+                    .append("                    <td>").append(url).append("</td>")
+                    .append("                    <td>").append(title).append("</td>")
+                    .append("                    <td>").append(keywords).append("</td>")
+                    .append("                </tr>");
         }
 
-        htmlResponse.append("        </table>")
+        htmlResponse.append("            </table>")
+                .append("        </div>")
                 .append("    </div>")
                 .append("</body>")
                 .append("</html>");
