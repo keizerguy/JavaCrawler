@@ -16,7 +16,7 @@ import org.example.elasticsearch.ElasticSearchIndexer;
 import org.example.elasticsearch.JsonObject;
 import org.jsoup.Jsoup;
 
-import static org.example.ranking.PageRank.extractKeywords;
+import static org.example.ranking.TextRank.extractKeywords;
 
 public class HtmlCrawler extends WebCrawler {
 
