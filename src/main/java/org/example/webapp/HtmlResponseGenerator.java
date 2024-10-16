@@ -74,8 +74,8 @@ public class HtmlResponseGenerator {
                 + "            background-color: transparent;"
                 + "            padding: 10px;"
                 + "            position: absolute;"
-                + "            top: 10px;"
-                + "            left: 10px;"
+                + "            top: 5px;"
+                + "            left: 5px;"
                 + "            z-index: 20;"
                 + "        }"
                 + "        nav a {"
@@ -222,10 +222,6 @@ public class HtmlResponseGenerator {
                 .append("                    <th>Title</th>")
                 .append("                    <th>Keywords</th>")
                 .append("                </tr>");
-
-        for (SearchHit hit : searchResponse.getHits()) {
-            System.out.println("Hit ID: " + hit.getId());
-        }
 
         // Populate the table rows from the SearchHit array
         for (SearchHit hit : searchResponse.getHits()) {
